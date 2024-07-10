@@ -1,7 +1,7 @@
 from transformers import pipeline
-
 import subprocess
 import sys
+
 
 def install_packages():
     try:
@@ -11,21 +11,44 @@ def install_packages():
         sys.exit(1)
 
 
+def read_text_file(file_path):
+    with open(file_path, 'r', encoding='utf-8') as file:
+        return file.read()
+
+
+def split_text_into_sentence(text):
+    sentences = text.split('.')
+    return [sentence.strip() for sentence in sentences if sentence.strip()]
+
+
 if __name__ == "__main__":
     install_packages()
-    # Below is the main code of main.py
-    sentiment_analysis = pipeline("sentiment-analysis")
-    texts = [
-        "I love using Python for make game.",
-        "This product didn't meet my expectations.",
-        "I'm not sure how I feel about this.",
-        "I hate this"
-    ]
+    sentiment_analysis = pipeline('sentiment-analysis')
 
-    results = sentiment_analysis(texts)
+    file_path = "long_text.txt"
+    text = read_text_file(file_path)
+    sentences = split_text_into_sentence(text)
 
-    for text, result in zip(texts, results):
-        print(f"Text: {text}")
-        print(f"sentiment: {result['label']},Score: {result['score']:.4f}")
-        print("Packages installed successfully!")
+    # Filter out invalid input
+    valid_sentences = [sentence for sentence in sentences if len(sentence) > 0]
 
+    if not valid_sentences:
+        print("No valid sentences found for analysis.")
+        sys.exit(1)
+
+    results = sentiment_analysis(valid_sentences)
+
+    positive_count = 0
+    negative_count = 0
+
+    for sentence, result in zip(valid_sentences, results):
+        print(f"Text: {sentence}")
+        print(f"Sentiment: {result['label']}, Score: {result['score']:.4f}")
+        print()
+
+    print("Packages installed successfully!")
+
+    if positive_count > negative_count:
+        print('POSITIVE STORY')
+    else:
+        print('NEGATIVE STORY')
